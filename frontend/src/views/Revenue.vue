@@ -138,8 +138,10 @@ export default {
     this.loadRanking()
   },
   watch: {
-    platform() {
-      this.loadRanking()
+    platform(newVal, oldVal) {
+      if (oldVal !== undefined) {
+        this.loadRanking()
+      }
     },
   },
   methods: {

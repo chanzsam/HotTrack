@@ -86,11 +86,15 @@ export default {
     this.loadData()
   },
   watch: {
-    platform() {
-      this.loadData()
+    platform(newVal, oldVal) {
+      if (oldVal !== undefined) {
+        this.loadData()
+      }
     },
-    limit() {
-      this.loadData()
+    limit(newVal, oldVal) {
+      if (oldVal !== undefined) {
+        this.loadData()
+      }
     },
   },
   methods: {

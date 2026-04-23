@@ -91,11 +91,15 @@ export default {
     this.loadData()
   },
   watch: {
-    platform() {
-      this.loadData()
+    platform(newVal, oldVal) {
+      if (oldVal !== undefined) {
+        this.loadData()
+      }
     },
-    hours() {
-      this.loadData()
+    hours(newVal, oldVal) {
+      if (oldVal !== undefined) {
+        this.loadData()
+      }
     },
   },
   methods: {
