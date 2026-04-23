@@ -99,14 +99,17 @@ export default {
   },
   methods: {
     async loadData() {
+      console.log('[TopViewed] loadData called, platform:', this.platform, 'limit:', this.limit)
       this.loading = true
       try {
         const params = { limit: parseInt(this.limit) }
         if (this.platform) params.platform = this.platform
+        console.log('[TopViewed] API params:', params)
         const res = await videosApi.getTopViewed(params)
+        console.log('[TopViewed] API response:', res.data.length, 'videos')
         this.videos = res.data
       } catch (e) {
-        console.error('加载失败:', e)
+        console.error('[TopViewed] 加载失败:', e)
       } finally {
         this.loading = false
       }

@@ -103,14 +103,17 @@ export default {
   },
   methods: {
     async loadData() {
+      console.log('[Viral] loadData called, platform:', this.platform, 'hours:', this.hours)
       this.loading = true
       try {
         const params = { limit: 50, hours: parseInt(this.hours) }
         if (this.platform) params.platform = this.platform
+        console.log('[Viral] API params:', params)
         const res = await analyticsApi.getViral(params)
+        console.log('[Viral] API response:', res.data.length, 'videos')
         this.videos = res.data
       } catch (e) {
-        console.error('加载失败:', e)
+        console.error('[Viral] 加载失败:', e)
       } finally {
         this.loading = false
       }

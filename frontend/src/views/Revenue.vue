@@ -166,14 +166,17 @@ export default {
       }
     },
     async loadRanking() {
+      console.log('[Revenue] loadRanking called, platform:', this.platform)
       this.loadingRanking = true
       try {
         const params = { limit: 50 }
         if (this.platform) params.platform = this.platform
+        console.log('[Revenue] API params:', params)
         const res = await analyticsApi.getRevenueRanking(params)
+        console.log('[Revenue] API response:', res.data.length, 'videos')
         this.revenueRanking = res.data
       } catch (e) {
-        console.error('加载失败:', e)
+        console.error('[Revenue] 加载失败:', e)
       } finally {
         this.loadingRanking = false
       }

@@ -104,14 +104,17 @@ export default {
   },
   methods: {
     async loadData() {
+      console.log('[Trending] loadData called, platform:', this.platform, 'hours:', this.hours)
       this.loading = true
       try {
         const params = { hours: parseInt(this.hours), limit: 50 }
         if (this.platform) params.platform = this.platform
+        console.log('[Trending] API params:', params)
         const res = await videosApi.getTrending(params)
+        console.log('[Trending] API response:', res.data.length, 'videos')
         this.videos = res.data
       } catch (e) {
-        console.error('加载失败:', e)
+        console.error('[Trending] 加载失败:', e)
       } finally {
         this.loading = false
       }
