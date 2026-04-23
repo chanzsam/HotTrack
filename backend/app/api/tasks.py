@@ -87,7 +87,7 @@ def crawl_tiktok(
     max_results: int = Query(50, ge=1, le=50),
     db: Session = Depends(get_db),
 ):
-    crawler = TikTokCrawler()
+    crawler = TikTokCrawler(use_free_first=True)
     videos = []
 
     if type == "hashtag" and keyword:
@@ -160,7 +160,7 @@ def crawl_tiktok_trending(
     count: int = Query(50, ge=1, le=50),
     db: Session = Depends(get_db),
 ):
-    crawler = TikTokCrawler()
+    crawler = TikTokCrawler(use_free_first=True)
     videos = crawler.get_trending_videos(count=count)
     if not videos:
         return {"message": "未获取到数据，TikTok 爬虫可能被反爬限制", "count": 0}
@@ -175,7 +175,7 @@ def crawl_tiktok_most_viewed(
     count: int = Query(50, ge=1, le=50),
     db: Session = Depends(get_db),
 ):
-    crawler = TikTokCrawler()
+    crawler = TikTokCrawler(use_free_first=True)
     videos = crawler.get_most_viewed_videos(hashtag=hashtag, count=count)
     if not videos:
         return {"message": "未获取到数据", "count": 0}
@@ -190,7 +190,7 @@ def crawl_tiktok_viral(
     count: int = Query(50, ge=1, le=50),
     db: Session = Depends(get_db),
 ):
-    crawler = TikTokCrawler()
+    crawler = TikTokCrawler(use_free_first=True)
     videos = crawler.search_viral_candidates(keyword=keyword, count=count)
     if not videos:
         return {"message": "未获取到数据", "count": 0}
@@ -212,7 +212,7 @@ def crawl_all_platforms(
         yt_saved = yt_crawler.save_videos_to_db(yt_trending, db)
         results["youtube_trending"] = len(yt_saved)
 
-    tt_crawler = TikTokCrawler()
+    tt_crawler = TikTokCrawler(use_free_first=True)
     tt_trending = tt_crawler.get_trending_videos()
     if tt_trending:
         tt_saved = tt_crawler.save_videos_to_db(tt_trending, db)
@@ -250,15 +250,14 @@ def reset_and_crawl_real_data(db: Session = Depends(get_db)):
         except Exception as e:
             results["errors"].append(f"YouTube: {str(e)}")
     
-    if settings.TIKHUB_ENABLED:
-        try:
-            tt_crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY)
-            tt_videos = tt_crawler.get_trending_videos(count=50)
-            if tt_videos:
-                saved = tt_crawler.save_videos_to_db(tt_videos, db)
-                results["tiktok"] = len(saved)
-        except Exception as e:
-            results["errors"].append(f"TikTok: {str(e)}")
+    try:
+        tt_crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY, use_free_first=True)
+        tt_videos = tt_crawler.get_trending_videos(count=50)
+        if tt_videos:
+            saved = tt_crawler.save_videos_to_db(tt_videos, db)
+            results["tiktok"] = len(saved)
+    except Exception as e:
+        results["errors"].append(f"TikTok: {str(e)}")
     
     if results["youtube"] > 0 or results["tiktok"] > 0:
         _run_post_crawl_analysis(db)

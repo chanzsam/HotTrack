@@ -64,18 +64,17 @@ def _auto_seed_if_empty():
                 except Exception as e:
                     logger.warning(f"YouTube API 获取失败: {e}")
             
-            if settings.TIKHUB_ENABLED:
-                try:
-                    from app.crawlers.tiktok import TikTokCrawler
-                    
-                    crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY)
-                    videos = crawler.get_trending_videos(count=50)
-                    if videos:
-                        saved = crawler.save_videos_to_db(videos, db)
-                        tiktok_count = len(saved)
-                        logger.info(f"使用 TikHub API 获取了 {tiktok_count} 条真实数据")
-                except Exception as e:
-                    logger.warning(f"TikHub API 获取失败: {e}")
+            try:
+                from app.crawlers.tiktok import TikTokCrawler
+                
+                crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY, use_free_first=True)
+                videos = crawler.get_trending_videos(count=50)
+                if videos:
+                    saved = crawler.save_videos_to_db(videos, db)
+                    tiktok_count = len(saved)
+                    logger.info(f"获取了 {tiktok_count} 条 TikTok 数据")
+            except Exception as e:
+                logger.warning(f"TikTok 获取失败: {e}")
             
             if youtube_count > 0 or tiktok_count > 0:
                 from app.analyzers.viral import ViralAnalyzer

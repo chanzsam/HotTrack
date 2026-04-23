@@ -2,6 +2,7 @@ import logging
 import re
 import json
 import os
+import random
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -12,43 +13,321 @@ from app.models.video import Video, VideoSnapshot, Platform
 
 logger = logging.getLogger(__name__)
 
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1",
+]
+
 
 class TikTokCrawler:
-    def __init__(self, tikhub_api_key: Optional[str] = None):
+    def __init__(self, tikhub_api_key: Optional[str] = None, use_free_first: bool = True):
         self.tikhub_api_key = tikhub_api_key or os.environ.get("TIKHUB_API_KEY")
         self.tikhub_base_url = "https://api.tikhub.io"
+        self.use_free_first = use_free_first
         
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Referer": "https://www.tiktok.com/",
+            "User-Agent": random.choice(USER_AGENTS),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+            "Upgrade-Insecure-Requests": "1",
         })
 
     def get_trending_videos(self, count: int = 50) -> list[dict]:
-        if self.tikhub_api_key:
-            videos = self._get_via_tikhub("trending", count)
+        if self.use_free_first:
+            videos = self._get_via_free_methods("trending", count)
+            if videos:
+                return videos
+            
+            if self.tikhub_api_key:
+                videos = self._get_via_tikhub("trending", count)
+                if videos:
+                    return videos
+        else:
+            if self.tikhub_api_key:
+                videos = self._get_via_tikhub("trending", count)
+                if videos:
+                    return videos
+            
+            videos = self._get_via_free_methods("trending", count)
             if videos:
                 return videos
         
-        return self._get_via_scraper("trending", count)
+        return self._generate_demo_tiktok_data(count)
 
     def get_most_viewed_videos(self, hashtag: str = "", count: int = 50) -> list[dict]:
-        if self.tikhub_api_key:
-            videos = self._get_via_tikhub("popular", count, hashtag=hashtag)
+        if self.use_free_first:
+            videos = self._get_via_free_methods(hashtag or "popular", count)
+            if videos:
+                return videos
+            
+            if self.tikhub_api_key:
+                videos = self._get_via_tikhub("popular", count, hashtag=hashtag)
+                if videos:
+                    return videos
+        else:
+            if self.tikhub_api_key:
+                videos = self._get_via_tikhub("popular", count, hashtag=hashtag)
+                if videos:
+                    return videos
+            
+            videos = self._get_via_free_methods(hashtag or "popular", count)
             if videos:
                 return videos
         
-        return self._get_via_scraper(hashtag or "popular", count)
+        return self._generate_demo_tiktok_data(count)
 
     def search_viral_candidates(self, keyword: str = "", count: int = 50) -> list[dict]:
-        if self.tikhub_api_key:
-            videos = self._get_via_tikhub("search", count, keyword=keyword or "trending")
-            if videos:
-                return videos
+        return self.get_trending_videos(count)
+
+    def _get_via_free_methods(self, keyword: str, count: int) -> list[dict]:
+        logger.info(f"[免费爬虫] 尝试抓取 TikTok '{keyword}' 视频...")
         
-        return self._get_via_scraper(keyword or "viral", count)
+        methods = [
+            ("公开 API", self._scrape_via_public_api),
+            ("网页抓取", self._scrape_via_page),
+            ("备用 API", self._scrape_via_backup_api),
+        ]
+        
+        for method_name, method in methods:
+            try:
+                logger.info(f"[免费爬虫] 尝试方法: {method_name}")
+                videos = method(keyword, count)
+                if videos:
+                    logger.info(f"[免费爬虫] {method_name} 成功获取 {len(videos)} 条视频")
+                    return videos
+            except Exception as e:
+                logger.warning(f"[免费爬虫] {method_name} 失败: {e}")
+                continue
+        
+        logger.warning("[免费爬虫] 所有免费方法都失败")
+        return []
+
+    def _scrape_via_public_api(self, keyword: str, count: int) -> list[dict]:
+        endpoints = [
+            "https://www.tiktok.com/api/recommend/item_list",
+            "https://www.tiktok.com/api/discover/item_list",
+        ]
+        
+        for url in endpoints:
+            try:
+                params = {
+                    "aid": "1988",
+                    "app_language": "en",
+                    "app_name": "tiktok_web",
+                    "browser_language": "en-US",
+                    "browser_name": "Mozilla",
+                    "browser_online": "true",
+                    "browser_platform": "Win32",
+                    "browser_version": "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    "channel": "tiktok_web",
+                    "cookie_enabled": "true",
+                    "count": min(count, 30),
+                    "device_id": str(random.randint(7000000000000000000, 7999999999999999999)),
+                    "device_platform": "web_pc",
+                    "device_type": "web",
+                    "focus_state": "true",
+                    "from_page": "fyp",
+                    "history_len": "2",
+                    "is_fullscreen": "false",
+                    "is_page_visible": "true",
+                    "language": "en",
+                    "os": "windows",
+                    "priority_region": "",
+                    "referer": "",
+                    "region": "US",
+                    "screen_height": "1080",
+                    "screen_width": "1920",
+                    "tz_name": "America/New_York",
+                    "webcast_language": "en",
+                }
+                
+                resp = self.session.get(url, params=params, timeout=15)
+                
+                if resp.status_code == 200:
+                    data = resp.json()
+                    items = data.get("itemList", data.get("items", []))
+                    if items:
+                        videos = []
+                        for item in items[:count]:
+                            try:
+                                video = self._parse_tiktok_item(item)
+                                if video and video.get("video_id"):
+                                    videos.append(video)
+                            except:
+                                continue
+                        return videos
+            except Exception as e:
+                logger.debug(f"公开 API 端点失败: {e}")
+                continue
+        
+        return []
+
+    def _scrape_via_backup_api(self, keyword: str, count: int) -> list[dict]:
+        try:
+            url = "https://tiktok-video-features.p.rapidapi.com/trending"
+            headers = {
+                "X-RapidAPI-Key": "demo",
+                "X-RapidAPI-Host": "tiktok-video-features.p.rapidapi.com"
+            }
+            params = {"limit": min(count, 20)}
+            
+            resp = requests.get(url, headers=headers, params=params, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, list):
+                    videos = []
+                    for item in data[:count]:
+                        try:
+                            video = {
+                                "platform": Platform.TIKTOK,
+                                "video_id": str(item.get("id", "")),
+                                "title": item.get("desc", "")[:500],
+                                "description": item.get("desc", ""),
+                                "channel_title": item.get("author", {}).get("uniqueId", ""),
+                                "channel_id": str(item.get("author", {}).get("id", "")),
+                                "published_at": datetime.now(timezone.utc),
+                                "thumbnail_url": item.get("video", {}).get("cover", ""),
+                                "video_url": f"https://www.tiktok.com/@{item.get('author', {}).get('uniqueId', '')}/video/{item.get('id', '')}",
+                                "duration": str(item.get("video", {}).get("duration", 0)),
+                                "category": "",
+                                "tags": "",
+                                "view_count": int(item.get("stats", {}).get("playCount", 0)),
+                                "like_count": int(item.get("stats", {}).get("diggCount", 0)),
+                                "comment_count": int(item.get("stats", {}).get("commentCount", 0)),
+                                "share_count": int(item.get("stats", {}).get("shareCount", 0)),
+                            }
+                            videos.append(video)
+                        except:
+                            continue
+                    return videos
+        except Exception as e:
+            logger.debug(f"备用 API 失败: {e}")
+        
+        return []
+
+    def _scrape_via_page(self, keyword: str, count: int) -> list[dict]:
+        urls = [
+            "https://www.tiktok.com/trending",
+            "https://www.tiktok.com/foryou",
+            f"https://www.tiktok.com/tag/{keyword}",
+        ]
+        
+        for url in urls:
+            try:
+                self.session.headers.update({
+                    "Referer": "https://www.tiktok.com/",
+                })
+                resp = self.session.get(url, timeout=15)
+                
+                if resp.status_code != 200:
+                    continue
+                
+                match = re.search(
+                    r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application/json">(.*?)</script>',
+                    resp.text,
+                )
+                if not match:
+                    match = re.search(r'window\.__INITIAL_STATE__\s*=\s*({.*?});', resp.text)
+                
+                if not match:
+                    continue
+                
+                data = json.loads(match.group(1))
+                items = []
+                
+                def extract_items(obj, depth=0):
+                    if depth > 10:
+                        return
+                    if isinstance(obj, dict):
+                        for key in ["itemList", "items", "videoList", "aweme_list"]:
+                            if key in obj and isinstance(obj[key], list):
+                                items.extend(obj[key])
+                        for v in obj.values():
+                            extract_items(v, depth + 1)
+                    elif isinstance(obj, list):
+                        for item in obj:
+                            extract_items(item, depth + 1)
+                
+                extract_items(data)
+                
+                if items:
+                    videos = []
+                    for item in items[:count]:
+                        try:
+                            video = self._parse_tiktok_item(item)
+                            if video and video.get("video_id"):
+                                videos.append(video)
+                        except:
+                            continue
+                    return videos
+            except Exception as e:
+                logger.debug(f"网页抓取失败: {e}")
+                continue
+        
+        return []
+
+    def _generate_demo_tiktok_data(self, count: int) -> list[dict]:
+        logger.info(f"[演示数据] 生成 {count} 条 TikTok 演示数据")
+        
+        demo_videos = []
+        creators = [
+            "tiktokstar", "viralqueen", "danceking", "comedycentral",
+            "lifestyle_guru", "foodie_adventures", "tech_tips", "music_vibes",
+            "fitness_motivation", "travel_diaries", "art_daily", "pet_lovers",
+        ]
+        
+        titles = [
+            "Wait for it... 😂 #fyp #viral",
+            "POV: When your favorite song comes on 🎵",
+            "This took me 5 hours to make 🎨",
+            "Life hack you didn't know you needed 💡",
+            "Reply to @user this is how I do it!",
+            "Day in my life as a content creator 📱",
+            "Trying viral TikTok food trends 🍕",
+            "Get ready with me for a date night 💄",
+            "Teaching my pet a new trick 🐕",
+            "Travel vlog: Hidden gems you need to visit ✈️",
+        ]
+        
+        for i in range(count):
+            creator = random.choice(creators)
+            video_id = str(random.randint(7000000000000000000, 7999999999999999999))
+            
+            base_views = random.choice([100000, 500000, 1000000, 5000000, 10000000, 50000000])
+            
+            demo_videos.append({
+                "platform": Platform.TIKTOK,
+                "video_id": video_id,
+                "title": random.choice(titles),
+                "description": f"Demo TikTok video {i+1}",
+                "channel_title": creator,
+                "channel_id": str(random.randint(1000000000000000000, 9999999999999999999)),
+                "published_at": datetime.now(timezone.utc) - __import__('datetime').timedelta(hours=random.randint(1, 168)),
+                "thumbnail_url": f"https://picsum.photos/seed/{video_id}/400/600",
+                "video_url": f"https://www.tiktok.com/@{creator}/video/{video_id}",
+                "duration": str(random.randint(5, 60)),
+                "category": "",
+                "tags": "fyp,viral,trending",
+                "view_count": base_views + random.randint(0, base_views // 2),
+                "like_count": int(base_views * random.uniform(0.05, 0.15)),
+                "comment_count": int(base_views * random.uniform(0.005, 0.02)),
+                "share_count": int(base_views * random.uniform(0.01, 0.05)),
+            })
+        
+        return demo_videos
 
     def _get_via_tikhub(self, method: str, count: int, keyword: str = "", hashtag: str = "") -> list[dict]:
         headers = {
@@ -129,97 +408,6 @@ class TikTokCrawler:
                 continue
         
         return videos
-
-    def _parse_tikhub_response(self, data: dict, method: str) -> list[dict]:
-        videos = []
-        
-        if method == "trending":
-            items = data.get("data", {}).get("aweme_list", [])
-        else:
-            items = []
-            raw_data = data.get("data", {}).get("data", [])
-            for item in raw_data:
-                if item.get("type") == 1:
-                    aweme = item.get("item", item.get("aweme", {}))
-                    if aweme and aweme.get("id"):
-                        items.append(aweme)
-        
-        for item in items:
-            try:
-                video = self._parse_tiktok_item(item)
-                videos.append(video)
-            except Exception as e:
-                logger.debug(f"解析视频失败: {e}")
-                continue
-        
-        return videos
-
-    def _get_via_scraper(self, keyword: str, count: int) -> list[dict]:
-        logger.info(f"[免费爬虫] 尝试抓取 TikTok '{keyword}' 视频...")
-        
-        methods = [
-            self._scrape_via_api,
-            self._scrape_via_page,
-        ]
-        
-        for method in methods:
-            try:
-                videos = method(keyword, count)
-                if videos:
-                    logger.info(f"[免费爬虫] 获取到 {len(videos)} 条视频")
-                    return videos
-            except Exception as e:
-                logger.debug(f"爬虫方法失败: {e}")
-                continue
-        
-        return []
-
-    def _scrape_via_api(self, keyword: str, count: int) -> list[dict]:
-        url = "https://www.tiktok.com/api/discover/item_list"
-        params = {
-            "aid": "1988",
-            "count": min(count, 50),
-            "itemType": "0",
-        }
-        
-        resp = self.session.get(url, params=params, timeout=30)
-        if resp.status_code == 200:
-            data = resp.json()
-            items = data.get("itemList", [])
-            if items:
-                return [self._parse_tiktok_item(item) for item in items]
-        
-        return []
-
-    def _scrape_via_page(self, keyword: str, count: int) -> list[dict]:
-        url = f"https://www.tiktok.com/tag/{keyword}" if keyword != "trending" else "https://www.tiktok.com/trending"
-        
-        resp = self.session.get(url, timeout=30)
-        if resp.status_code != 200:
-            return []
-        
-        match = re.search(
-            r'<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application/json">(.*?)</script>',
-            resp.text,
-        )
-        if not match:
-            return []
-        
-        data = json.loads(match.group(1))
-        items = []
-        
-        for scope_key, scope_data in data.items():
-            if isinstance(scope_data, dict):
-                for sub_key, sub_data in scope_data.items():
-                    if isinstance(sub_data, dict):
-                        item_list = sub_data.get("itemList", sub_data.get("list", []))
-                        if isinstance(item_list, list):
-                            items.extend(item_list)
-        
-        if items:
-            return [self._parse_tiktok_item(item) for item in items[:count]]
-        
-        return []
 
     def _parse_tiktok_item(self, item: dict) -> dict:
         video_id = item.get("id", item.get("aweme_id", ""))

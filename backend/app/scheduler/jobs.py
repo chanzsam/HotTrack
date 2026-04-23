@@ -24,8 +24,7 @@ def run_scheduled_crawl():
             yt_crawler.save_videos_to_db(yt_videos, db)
             logger.info(f"[定时任务] YouTube 采集 {len(yt_videos)} 条")
 
-        tikhub_key = settings.TIKHUB_API_KEY if settings.TIKHUB_ENABLED else None
-        tt_crawler = TikTokCrawler(tikhub_api_key=tikhub_key)
+        tt_crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY, use_free_first=True)
         tt_videos = tt_crawler.get_trending_videos()
         if tt_videos:
             tt_crawler.save_videos_to_db(tt_videos, db)
