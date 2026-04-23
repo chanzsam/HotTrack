@@ -300,34 +300,26 @@ export default {
 
 .revenue-cell {
   white-space: nowrap;
+  text-align: right;
 }
 
 .revenue-main {
   color: #059669;
   font-weight: 700;
+  font-size: 13px;
 }
 
 .revenue-range {
-  display: block;
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 2px;
+  display: none;
 }
 
 .revenue-detail {
-  display: block;
-  font-size: 10px;
-  color: #94a3b8;
-  margin-top: 1px;
+  display: none;
 }
 
 @media (max-width: 768px) {
   .result-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-
-.revenue-table-wrapper table {
-  min-width: 1400px;
 }
 </style>

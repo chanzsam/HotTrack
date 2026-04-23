@@ -184,12 +184,6 @@ body {
 
 .table-wrapper {
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.table-wrapper table {
-  min-width: 1300px;
 }
 
 .table-wrapper::-webkit-scrollbar {
@@ -401,26 +395,27 @@ body {
 .video-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .video-table th {
   text-align: left;
-  padding: 12px 14px;
+  padding: 10px 8px;
   border-bottom: 2px solid #e2e8f0;
   color: #94a3b8;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
 .video-table td {
-  padding: 14px 14px;
+  padding: 12px 8px;
   border-bottom: 1px solid #f1f5f9;
-  font-size: 14px;
+  font-size: 13px;
   color: #475569;
+  vertical-align: middle;
 }
 
 .video-table tbody tr {
@@ -433,14 +428,14 @@ body {
 .video-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 .video-thumb {
-  width: 80px;
-  height: 45px;
-  border-radius: 6px;
+  width: 64px;
+  height: 36px;
+  border-radius: 4px;
   object-fit: cover;
   background: #f1f5f9;
   flex-shrink: 0;
@@ -450,7 +445,7 @@ body {
 .video-title {
   font-weight: 600;
   color: #1e293b;
-  max-width: 200px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

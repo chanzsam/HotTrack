@@ -160,27 +160,19 @@ export default {
 </script>
 
 <style scoped>
-.topviewed-table-wrapper table {
-  min-width: 1200px;
-}
-
 .revenue-cell {
   white-space: nowrap;
+  text-align: right;
 }
 .revenue-main {
   color: #059669;
   font-weight: 700;
+  font-size: 13px;
 }
 .revenue-range {
-  display: block;
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 2px;
+  display: none;
 }
 .revenue-detail {
-  display: block;
-  font-size: 10px;
-  color: #94a3b8;
-  margin-top: 1px;
+  display: none;
 }
 </style>
