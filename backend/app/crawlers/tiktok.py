@@ -56,26 +56,79 @@ class TikTokCrawler:
             "Content-Type": "application/json"
         }
         
-        try:
-            url = f"{self.tikhub_base_url}/api/v1/tiktok/web/fetch_general_search"
-            search_keyword = keyword or hashtag or "trending"
-            params = {"keyword": search_keyword, "count": min(count, 30), "offset": 0}
-            
-            resp = requests.get(url, headers=headers, params=params, timeout=30)
-            
-            if resp.status_code == 200:
-                data = resp.json()
-                videos = self._parse_tikhub_response(data, "search")
-                if videos:
-                    logger.info(f"[TikHub] 获取到 {len(videos)} 条 TikTok 视频")
-                    return videos
-            else:
-                logger.warning(f"[TikHub] API 请求失败: {resp.status_code}")
-                
-        except Exception as e:
-            logger.error(f"[TikHub] 请求出错: {e}")
+        endpoints = [
+            {
+                "url": f"{self.tikhub_base_url}/api/v1/tiktok/web/fetch_hashtag_video_list",
+                "params": {"hashtagName": "fyp", "count": min(count, 30), "cursor": 0},
+            },
+            {
+                "url": f"{self.tikhub_base_url}/api/v1/tiktok/web/fetch_general_search",
+                "params": {"keyword": keyword or hashtag or "trending", "count": min(count, 30), "offset": 0},
+            },
+        ]
         
+        for endpoint in endpoints:
+            try:
+                logger.info(f"[TikHub] 尝试端点: {endpoint['url']}")
+                resp = requests.get(endpoint["url"], headers=headers, params=endpoint["params"], timeout=30)
+                
+                logger.info(f"[TikHub] 响应状态: {resp.status_code}")
+                
+                if resp.status_code == 200:
+                    data = resp.json()
+                    logger.info(f"[TikHub] 响应数据键: {list(data.keys())}")
+                    
+                    videos = self._parse_tikhub_response_v2(data)
+                    if videos:
+                        logger.info(f"[TikHub] 成功获取 {len(videos)} 条 TikTok 视频")
+                        return videos
+                    else:
+                        logger.warning(f"[TikHub] 端点返回空数据")
+                else:
+                    logger.warning(f"[TikHub] API 请求失败: {resp.status_code} - {resp.text[:200]}")
+                    
+            except Exception as e:
+                logger.error(f"[TikHub] 请求出错: {e}")
+        
+        logger.error("[TikHub] 所有端点都失败")
         return []
+
+    def _parse_tikhub_response_v2(self, data: dict) -> list[dict]:
+        videos = []
+        
+        items = []
+        
+        if "data" in data:
+            inner = data["data"]
+            
+            if isinstance(inner, dict):
+                if "aweme_list" in inner:
+                    items = inner["aweme_list"]
+                elif "data" in inner:
+                    for item in inner["data"]:
+                        if item.get("type") == 1:
+                            aweme = item.get("item", item.get("aweme", {}))
+                            if aweme and aweme.get("id"):
+                                items.append(aweme)
+                elif "video_list" in inner:
+                    items = inner["video_list"]
+                elif "itemList" in inner:
+                    items = inner["itemList"]
+            elif isinstance(inner, list):
+                items = inner
+        
+        logger.info(f"[TikHub] 找到 {len(items)} 个视频项")
+        
+        for item in items:
+            try:
+                video = self._parse_tiktok_item(item)
+                if video and video.get("video_id"):
+                    videos.append(video)
+            except Exception as e:
+                logger.debug(f"解析视频失败: {e}")
+                continue
+        
+        return videos
 
     def _parse_tikhub_response(self, data: dict, method: str) -> list[dict]:
         videos = []

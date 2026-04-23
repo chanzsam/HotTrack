@@ -27,6 +27,7 @@ export const analyticsApi = {
 export const tasksApi = {
   startCrawl: (platform, params) => api.post(`/crawl/${platform}`, null, { params }),
   seedDemo: () => api.post('/crawl/seed-demo'),
+  resetAndCrawl: () => api.post('/crawl/reset-and-crawl'),
 }
 
 export const crawlApi = {

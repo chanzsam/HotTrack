@@ -223,6 +223,54 @@ def crawl_all_platforms(
     return {"message": "全平台数据采集完成", "results": results}
 
 
+@router.post("/reset-and-crawl")
+def reset_and_crawl_real_data(db: Session = Depends(get_db)):
+    from app.models.video import Video, VideoSnapshot, RevenueEstimate, ViralScore
+    from app.config import settings
+    
+    db.query(ViralScore).delete()
+    db.query(RevenueEstimate).delete()
+    db.query(VideoSnapshot).delete()
+    db.query(Video).delete()
+    db.commit()
+    
+    results = {
+        "youtube": 0,
+        "tiktok": 0,
+        "errors": []
+    }
+    
+    if settings.YOUTUBE_API_ENABLED:
+        try:
+            yt_crawler = YouTubeCrawler()
+            yt_videos = yt_crawler.get_trending_videos(region_code="US", max_results=50)
+            if yt_videos:
+                saved = yt_crawler.save_videos_to_db(yt_videos, db)
+                results["youtube"] = len(saved)
+        except Exception as e:
+            results["errors"].append(f"YouTube: {str(e)}")
+    
+    if settings.TIKHUB_ENABLED:
+        try:
+            tt_crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY)
+            tt_videos = tt_crawler.get_trending_videos(count=50)
+            if tt_videos:
+                saved = tt_crawler.save_videos_to_db(tt_videos, db)
+                results["tiktok"] = len(saved)
+        except Exception as e:
+            results["errors"].append(f"TikTok: {str(e)}")
+    
+    if results["youtube"] > 0 or results["tiktok"] > 0:
+        _run_post_crawl_analysis(db)
+    
+    return {
+        "message": "数据库已重置并重新采集",
+        "youtube_api_enabled": settings.YOUTUBE_API_ENABLED,
+        "tikhub_enabled": settings.TIKHUB_ENABLED,
+        "results": results
+    }
+
+
 @router.post("/seed-demo")
 def seed_demo_data(db: Session = Depends(get_db)):
     from app.demo.seed import generate_demo_data

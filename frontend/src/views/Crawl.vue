@@ -10,10 +10,17 @@
     </div>
 
     <div class="demo-section">
-      <button class="btn btn-accent" @click="seedDemo" :disabled="seeding">
+      <button class="btn btn-accent" @click="resetAndCrawl" :disabled="resetting">
+        {{ resetting ? '⏳ 采集中...' : '🔄 重置并采集真实数据' }}
+      </button>
+      <span class="demo-hint">清除现有数据，使用配置的 API Keys 获取真实数据（需先配置 Secrets）</span>
+    </div>
+
+    <div class="demo-section">
+      <button class="btn btn-secondary" @click="seedDemo" :disabled="seeding">
         {{ seeding ? '⏳ 生成中...' : '🎲 生成演示数据' }}
       </button>
-      <span class="demo-hint">无需 API Key，一键生成 60 条模拟数据体验全部功能</span>
+      <span class="demo-hint">无需 API Key，一键生成模拟数据体验功能</span>
     </div>
 
     <div class="task-grid">
@@ -111,6 +118,7 @@ export default {
       ytRunning: false,
       ttRunning: false,
       seeding: false,
+      resetting: false,
       logs: [],
     }
   },
@@ -173,6 +181,34 @@ export default {
         })
       } finally {
         this.seeding = false
+      }
+    },
+    async resetAndCrawl() {
+      this.resetting = true
+      const startTime = new Date().toLocaleTimeString()
+      try {
+        const res = await tasksApi.resetAndCrawl()
+        const data = res.data
+        let msg = data.message
+        if (data.results) {
+          msg += ` (YouTube: ${data.results.youtube}条, TikTok: ${data.results.tiktok}条)`
+        }
+        if (data.results?.errors?.length > 0) {
+          msg += ` 错误: ${data.results.errors.join(', ')}`
+        }
+        this.logs.unshift({
+          time: startTime,
+          status: data.results?.youtube > 0 || data.results?.tiktok > 0 ? 'success' : 'error',
+          message: msg,
+        })
+      } catch (e) {
+        this.logs.unshift({
+          time: startTime,
+          status: 'error',
+          message: `重置采集失败: ${e.response?.data?.detail || e.message}`,
+        })
+      } finally {
+        this.resetting = false
       }
     },
   },
