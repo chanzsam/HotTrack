@@ -77,30 +77,17 @@ class YouTubeCrawler:
         self, query: str = "", region_code: str = "US", max_results: int = 50
     ) -> list[dict]:
         params = {
-            "part": "snippet",
-            "type": "video",
-            "order": "viewCount",
-            "q": query,
+            "part": "snippet,contentDetails,statistics",
+            "chart": "mostPopular",
             "regionCode": region_code,
             "maxResults": min(max_results, 50),
         }
-        data = self._request("search", params)
+        data = self._request("videos", params)
         if not data:
             return []
 
-        video_ids = [item["id"]["videoId"] for item in data.get("items", [])]
-        if not video_ids:
-            return []
-
-        stats_params = {
-            "part": "snippet,contentDetails,statistics",
-            "id": ",".join(video_ids),
-        }
-        stats_data = self._request("videos", stats_params)
-        if not stats_data:
-            return []
-
-        videos = self._parse_video_list(stats_data)
+        videos = self._parse_video_list(data)
+        videos.sort(key=lambda x: x.get("view_count", 0), reverse=True)
         logger.info(f"获取到 {len(videos)} 条 YouTube 高播放量视频")
         return videos
 
