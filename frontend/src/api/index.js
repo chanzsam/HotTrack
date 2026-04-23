@@ -30,6 +30,7 @@ export const tasksApi = {
   startCrawl: (platform, params) => api.post(`/crawl/${platform}`, null, { params }),
   seedDemo: () => api.post('/crawl/seed-demo'),
   resetAndCrawl: () => api.post('/crawl/reset-and-crawl'),
+  calculateRevenue: () => api.post('/crawl/calculate-revenue'),
 }
 
 export const crawlApi = {

@@ -46,6 +46,16 @@ def test_youtube_api():
         return {"success": False, "error": str(e)}
 
 
+@router.post("/calculate-revenue")
+def calculate_revenue(db: Session = Depends(get_db)):
+    try:
+        revenue_analyzer = RevenueAnalyzer(db)
+        count = revenue_analyzer.batch_estimate_revenue()
+        return {"success": True, "message": f"成功估算 {count} 条视频收入", "count": count}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 @router.get("/schedule")
 def get_schedule_status():
     from app.main import scheduler, US_EASTERN
@@ -75,16 +85,22 @@ def trigger_crawl_now(db: Session = Depends(get_db)):
 
 
 def _run_post_crawl_analysis(db: Session):
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         viral_analyzer = ViralAnalyzer(db)
-        viral_analyzer.calculate_viral_scores()
-    except Exception:
-        pass
+        count = viral_analyzer.calculate_viral_scores()
+        logger.info(f"[分析] 爆红指数计算完成: {count} 条")
+    except Exception as e:
+        logger.error(f"[分析] 爆红指数计算失败: {e}")
+    
     try:
         revenue_analyzer = RevenueAnalyzer(db)
-        revenue_analyzer.batch_estimate_revenue()
-    except Exception:
-        pass
+        count = revenue_analyzer.batch_estimate_revenue()
+        logger.info(f"[分析] 收入估算完成: {count} 条")
+    except Exception as e:
+        logger.error(f"[分析] 收入估算失败: {e}")
 
 
 @router.post("/youtube")

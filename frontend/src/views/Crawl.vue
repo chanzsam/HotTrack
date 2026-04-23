@@ -38,6 +38,13 @@
       <span class="demo-hint">无需 API Key，一键生成模拟数据体验功能</span>
     </div>
 
+    <div class="demo-section">
+      <button class="btn btn-primary" @click="calculateRevenue" :disabled="calculating">
+        {{ calculating ? '⏳ 计算中...' : '💰 计算收入估算' }}
+      </button>
+      <span class="demo-hint">为所有视频计算收入估算数据</span>
+    </div>
+
     <div class="task-grid">
       <div class="card task-card">
         <div class="task-header">
@@ -142,6 +149,7 @@ export default {
       ttRunning: false,
       seeding: false,
       resetting: false,
+      calculating: false,
       logs: [],
     }
   },
@@ -155,6 +163,26 @@ export default {
         this.configStatus = res.data
       } catch (e) {
         console.error('加载配置状态失败:', e)
+      }
+    },
+    async calculateRevenue() {
+      this.calculating = true
+      const startTime = new Date().toLocaleTimeString()
+      try {
+        const res = await tasksApi.calculateRevenue()
+        this.logs.unshift({
+          time: startTime,
+          status: 'success',
+          message: res.data.message || `收入估算完成`,
+        })
+      } catch (e) {
+        this.logs.unshift({
+          time: startTime,
+          status: 'error',
+          message: `收入估算失败: ${e.response?.data?.detail || e.message}`,
+        })
+      } finally {
+        this.calculating = false
       }
     },
     async startYoutube() {
