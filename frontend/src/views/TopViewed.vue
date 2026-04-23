@@ -116,13 +116,19 @@ export default {
       if (!dateStr) return '-'
       const date = new Date(dateStr)
       const now = new Date()
-      const diffMs = now - date
-      const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-      if (diffHours < 1) return '刚刚'
+      const diffMs = now.getTime() - date.getTime()
+      if (diffMs < 0) return '刚刚'
+      const diffSeconds = Math.floor(diffMs / 1000)
+      const diffMinutes = Math.floor(diffSeconds / 60)
+      const diffHours = Math.floor(diffMinutes / 60)
+      if (diffMinutes < 1) return '刚刚'
+      if (diffHours < 1) return diffMinutes + '分钟前'
       if (diffHours < 24) return diffHours + '小时前'
       const diffDays = Math.floor(diffHours / 24)
       if (diffDays < 30) return diffDays + '天前'
-      return Math.floor(diffDays / 30) + '个月前'
+      const diffMonths = Math.floor(diffDays / 30)
+      if (diffMonths < 12) return diffMonths + '个月前'
+      return Math.floor(diffMonths / 12) + '年前'
     },
     handleImgError(e) {
       e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="54"><rect fill="%23f1f5f9" width="96" height="54" rx="8"/></svg>'

@@ -10,9 +10,10 @@ from app.models.video import Video, RevenueEstimate, Platform
 def _fmt_dt(dt):
     if dt is None:
         return None
-    s = dt.isoformat()
-    if not s.endswith(("Z", "+00:00")):
-        s += "Z"
+    if hasattr(dt, 'tzinfo') and dt.tzinfo is not None:
+        s = dt.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    else:
+        s = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
     return s
 
 
