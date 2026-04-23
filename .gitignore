@@ -1,0 +1,17 @@
+.env
+*.db
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+node_modules/
+frontend/dist/
+backend/.venv/
+.venv/
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
