@@ -7,8 +7,43 @@ from app.crawlers.youtube import YouTubeCrawler
 from app.crawlers.tiktok import TikTokCrawler
 from app.analyzers.viral import ViralAnalyzer
 from app.analyzers.revenue import RevenueAnalyzer
+from app.config import settings
 
 router = APIRouter(prefix="/crawl", tags=["crawl"])
+
+
+@router.get("/config-status")
+def get_config_status():
+    return {
+        "youtube_api_key_configured": bool(settings.YOUTUBE_API_KEY),
+        "youtube_api_key_length": len(settings.YOUTUBE_API_KEY) if settings.YOUTUBE_API_KEY else 0,
+        "youtube_api_enabled": settings.YOUTUBE_API_ENABLED,
+        "tikhub_api_key_configured": bool(settings.TIKHUB_API_KEY),
+        "tikhub_api_key_length": len(settings.TIKHUB_API_KEY) if settings.TIKHUB_API_KEY else 0,
+        "tikhub_enabled": settings.TIKHUB_ENABLED,
+    }
+
+
+@router.get("/test-youtube-api")
+def test_youtube_api():
+    if not settings.YOUTUBE_API_KEY:
+        return {"success": False, "error": "YouTube API Key 未配置"}
+    
+    try:
+        crawler = YouTubeCrawler()
+        videos = crawler.get_trending_videos(region_code="US", max_results=5)
+        if videos:
+            return {
+                "success": True, 
+                "count": len(videos),
+                "sample": {
+                    "title": videos[0].get("title", "")[:50],
+                    "views": videos[0].get("view_count", 0),
+                }
+            }
+        return {"success": False, "error": "未获取到数据，请检查 API Key 是否有效"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @router.get("/schedule")

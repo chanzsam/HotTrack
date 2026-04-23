@@ -25,6 +25,8 @@ export const analyticsApi = {
 }
 
 export const tasksApi = {
+  getConfigStatus: () => api.get('/crawl/config-status'),
+  testYoutubeApi: () => api.get('/crawl/test-youtube-api'),
   startCrawl: (platform, params) => api.post(`/crawl/${platform}`, null, { params }),
   seedDemo: () => api.post('/crawl/seed-demo'),
   resetAndCrawl: () => api.post('/crawl/reset-and-crawl'),

@@ -17,20 +17,35 @@ class YouTubeCrawler:
         self.api_key = api_key or settings.YOUTUBE_API_KEY
         self.base_url = "https://www.googleapis.com/youtube/v3"
         self.proxies = self._get_proxies()
+        logger.info(f"YouTubeCrawler 初始化: API Key 长度 = {len(self.api_key) if self.api_key else 0}")
 
     def _get_proxies(self) -> dict:
-        proxy = os.environ.get("HTTP_PROXY") or os.environ.get("http_proxy")
+        proxy = os.environ.get("HTTP_PROXY") or os.environ.get("http_proxy") or os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
         if proxy:
+            logger.info(f"使用代理: {proxy}")
             return {"http": proxy, "https": proxy}
+        logger.info("不使用代理")
         return {}
 
     def _request(self, endpoint: str, params: dict) -> Optional[dict]:
         params["key"] = self.api_key
         url = f"{self.base_url}/{endpoint}"
         try:
+            logger.info(f"YouTube API 请求: {endpoint}, params = {list(params.keys())}")
             resp = requests.get(url, params=params, proxies=self.proxies, timeout=30)
-            resp.raise_for_status()
+            logger.info(f"YouTube API 响应状态: {resp.status_code}")
+            
+            if resp.status_code != 200:
+                logger.error(f"YouTube API 错误响应: {resp.text[:500]}")
+                return None
+            
             return resp.json()
+        except requests.exceptions.Timeout:
+            logger.error("YouTube API 请求超时")
+            return None
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"YouTube API 连接错误: {e}")
+            return None
         except Exception as e:
             logger.error(f"YouTube API 请求失败: {e}")
             return None

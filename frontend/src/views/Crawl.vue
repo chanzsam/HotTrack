@@ -5,15 +5,30 @@
       <p class="page-subtitle">手动触发 YouTube / TikTok 数据抓取任务</p>
     </div>
 
-    <div class="info-box">
-      <p>⚙️ 请确保后端已配置正确的 API Key（YouTube 需要 YouTube Data API v3 Key，TikTok 使用爬虫方式抓取）。如果没有 API Key，可以点击"生成演示数据"快速体验所有功能。</p>
+    <div class="card config-status-card">
+      <h3 class="section-title">🔐 API 配置状态</h3>
+      <div class="config-grid">
+        <div class="config-item">
+          <span class="config-label">YouTube API</span>
+          <span class="config-value" :class="configStatus.youtube_api_key_configured ? 'success' : 'error'">
+            {{ configStatus.youtube_api_key_configured ? '✓ 已配置' : '✗ 未配置' }}
+          </span>
+        </div>
+        <div class="config-item">
+          <span class="config-label">TikHub API</span>
+          <span class="config-value" :class="configStatus.tikhub_api_key_configured ? 'success' : 'warning'">
+            {{ configStatus.tikhub_api_key_configured ? '✓ 已配置' : '○ 未配置 (可选)' }}
+          </span>
+        </div>
+      </div>
+      <button class="btn btn-sm" @click="loadConfigStatus">🔄 刷新状态</button>
     </div>
 
     <div class="demo-section">
       <button class="btn btn-accent" @click="resetAndCrawl" :disabled="resetting">
         {{ resetting ? '⏳ 采集中...' : '🔄 重置并采集真实数据' }}
       </button>
-      <span class="demo-hint">清除现有数据，使用配置的 API Keys 获取真实数据（需先配置 Secrets）</span>
+      <span class="demo-hint">清除现有数据，使用配置的 API Keys 获取真实数据</span>
     </div>
 
     <div class="demo-section">
@@ -105,6 +120,14 @@ export default {
   name: 'Crawl',
   data() {
     return {
+      configStatus: {
+        youtube_api_key_configured: false,
+        youtube_api_key_length: 0,
+        youtube_api_enabled: false,
+        tikhub_api_key_configured: false,
+        tikhub_api_key_length: 0,
+        tikhub_enabled: false,
+      },
       ytTask: {
         type: 'popular',
         region: 'US',
@@ -122,7 +145,18 @@ export default {
       logs: [],
     }
   },
+  mounted() {
+    this.loadConfigStatus()
+  },
   methods: {
+    async loadConfigStatus() {
+      try {
+        const res = await tasksApi.getConfigStatus()
+        this.configStatus = res.data
+      } catch (e) {
+        console.error('加载配置状态失败:', e)
+      }
+    },
     async startYoutube() {
       this.ytRunning = true
       const startTime = new Date().toLocaleTimeString()
@@ -216,6 +250,63 @@ export default {
 </script>
 
 <style scoped>
+.config-status-card {
+  margin-bottom: 20px;
+  padding: 20px;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.config-label {
+  font-weight: 600;
+  color: #475569;
+}
+
+.config-value {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.config-value.success {
+  color: #059669;
+}
+
+.config-value.error {
+  color: #dc2626;
+}
+
+.config-value.warning {
+  color: #f59e0b;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-sm:hover {
+  background: #e2e8f0;
+}
+
 .demo-section {
   display: flex;
   align-items: center;
