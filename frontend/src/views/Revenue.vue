@@ -137,6 +137,11 @@ export default {
   mounted() {
     this.loadRanking()
   },
+  watch: {
+    platform() {
+      this.loadRanking()
+    },
+  },
   methods: {
     calculate() {
       if (!this.calcForm.views) return

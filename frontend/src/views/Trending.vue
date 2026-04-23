@@ -90,6 +90,14 @@ export default {
   mounted() {
     this.loadData()
   },
+  watch: {
+    platform() {
+      this.loadData()
+    },
+    hours() {
+      this.loadData()
+    },
+  },
   methods: {
     async loadData() {
       this.loading = true

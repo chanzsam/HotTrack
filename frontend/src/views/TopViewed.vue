@@ -85,6 +85,14 @@ export default {
   mounted() {
     this.loadData()
   },
+  watch: {
+    platform() {
+      this.loadData()
+    },
+    limit() {
+      this.loadData()
+    },
+  },
   methods: {
     async loadData() {
       this.loading = true
