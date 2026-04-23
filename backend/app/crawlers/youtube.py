@@ -31,7 +31,10 @@ class YouTubeCrawler:
         params["key"] = self.api_key
         url = f"{self.base_url}/{endpoint}"
         try:
-            logger.info(f"YouTube API 请求: {endpoint}, params = {list(params.keys())}")
+            logger.info(f"YouTube API 请求: {endpoint}")
+            logger.info(f"YouTube API Key 前缀: {self.api_key[:10] if self.api_key and len(self.api_key) > 10 else 'KEY_TOO_SHORT'}")
+            logger.info(f"YouTube API Key 长度: {len(self.api_key) if self.api_key else 0}")
+            
             resp = requests.get(url, params=params, proxies=self.proxies, timeout=30)
             logger.info(f"YouTube API 响应状态: {resp.status_code}")
             

@@ -1,7 +1,10 @@
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 class Settings:
@@ -29,6 +32,12 @@ class Settings:
         "http://127.0.0.1:5174",
         "http://127.0.0.1:3000",
     ]
+    
+    def __init__(self):
+        logger.info(f"[Config] YOUTUBE_API_KEY: {'已配置' if self.YOUTUBE_API_KEY else '未配置'} (长度: {len(self.YOUTUBE_API_KEY)})")
+        logger.info(f"[Config] TIKHUB_API_KEY: {'已配置' if self.TIKHUB_API_KEY else '未配置'} (长度: {len(self.TIKHUB_API_KEY)})")
+        logger.info(f"[Config] YOUTUBE_API_ENABLED: {self.YOUTUBE_API_ENABLED}")
+        logger.info(f"[Config] TIKHUB_ENABLED: {self.TIKHUB_ENABLED}")
 
 
 settings = Settings()
