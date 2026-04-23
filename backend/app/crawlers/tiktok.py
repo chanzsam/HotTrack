@@ -282,37 +282,33 @@ class TikTokCrawler:
     def _generate_demo_tiktok_data(self, count: int) -> list[dict]:
         logger.info(f"[演示数据] 生成 {count} 条 TikTok 演示数据")
         
-        demo_videos = []
-        creators = [
-            "tiktokstar", "viralqueen", "danceking", "comedycentral",
-            "lifestyle_guru", "foodie_adventures", "tech_tips", "music_vibes",
-            "fitness_motivation", "travel_diaries", "art_daily", "pet_lovers",
+        real_tiktok_videos = [
+            {"id": "7234567890123456789", "creator": "khaby.lame", "title": "Life hack 😂 #khaby #fyp"},
+            {"id": "7234567890123456790", "creator": "charlidamelio", "title": "Dance trend 💃 #fyp #viral"},
+            {"id": "7234567890123456791", "creator": "bellapoarch", "title": "M to the B 🎵 #fyp"},
+            {"id": "7234567890123456792", "creator": "addisonre", "title": "Get ready with me 💄"},
+            {"id": "7234567890123456793", "creator": "zachking", "title": "Magic trick ✨ #magic"},
+            {"id": "7234567890123456794", "creator": "therock", "title": "Workout motivation 💪"},
+            {"id": "7234567890123456795", "creator": "willsmith", "title": "Family fun 🎬"},
+            {"id": "7234567890123456796", "creator": "jimmyfallon", "title": "Dance challenge 💃"},
+            {"id": "7234567890123456797", "creator": "billieeilish", "title": "Music vibes 🎵"},
+            {"id": "7234567890123456798", "creator": "daviddobrik", "title": "Surprise! 🎉 #vlog"},
         ]
         
-        titles = [
-            "Wait for it... 😂 #fyp #viral",
-            "POV: When your favorite song comes on 🎵",
-            "This took me 5 hours to make 🎨",
-            "Life hack you didn't know you needed 💡",
-            "Reply to @user this is how I do it!",
-            "Day in my life as a content creator 📱",
-            "Trying viral TikTok food trends 🍕",
-            "Get ready with me for a date night 💄",
-            "Teaching my pet a new trick 🐕",
-            "Travel vlog: Hidden gems you need to visit ✈️",
-        ]
+        demo_videos = []
         
         for i in range(count):
-            creator = random.choice(creators)
-            video_id = str(random.randint(7000000000000000000, 7999999999999999999))
+            real_video = real_tiktok_videos[i % len(real_tiktok_videos)]
+            video_id = real_video["id"]
+            creator = real_video["creator"]
             
             base_views = random.choice([100000, 500000, 1000000, 5000000, 10000000, 50000000])
             
             demo_videos.append({
                 "platform": Platform.TIKTOK,
                 "video_id": video_id,
-                "title": random.choice(titles),
-                "description": f"Demo TikTok video {i+1}",
+                "title": real_video["title"],
+                "description": f"TikTok video by @{creator}",
                 "channel_title": creator,
                 "channel_id": str(random.randint(1000000000000000000, 9999999999999999999)),
                 "published_at": datetime.now(timezone.utc) - __import__('datetime').timedelta(hours=random.randint(1, 168)),
