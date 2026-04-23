@@ -1,4 +1,5 @@
 import os
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -17,6 +18,8 @@ from app.api.analytics import router as analytics_router
 from app.api.tasks import router as tasks_router
 from app.api.ai import router as ai_router
 from app.scheduler.jobs import run_scheduled_crawl
+
+logger = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
 
@@ -45,13 +48,51 @@ def _auto_seed_if_empty():
     try:
         count = db.query(Video).count()
         if count == 0:
-            from app.demo.seed import generate_demo_data
-            from app.analyzers.viral import ViralAnalyzer
-            from app.analyzers.revenue import RevenueAnalyzer
-            n = generate_demo_data(db)
-            if n > 0:
-                ViralAnalyzer(db).calculate_viral_scores()
-                RevenueAnalyzer(db).batch_estimate_revenue()
+            seeded = False
+            
+            if settings.YOUTUBE_API_ENABLED:
+                try:
+                    from app.crawlers.youtube import YouTubeCrawler
+                    from app.analyzers.viral import ViralAnalyzer
+                    from app.analyzers.revenue import RevenueAnalyzer
+                    
+                    crawler = YouTubeCrawler()
+                    videos = crawler.get_trending_videos(region_code="US", max_results=50)
+                    if videos:
+                        crawler.save_videos_to_db(videos, db)
+                        ViralAnalyzer(db).calculate_viral_scores()
+                        RevenueAnalyzer(db).batch_estimate_revenue()
+                        seeded = True
+                        logger.info(f"使用 YouTube API 获取了 {len(videos)} 条真实数据")
+                except Exception as e:
+                    logger.warning(f"YouTube API 获取失败: {e}")
+            
+            if settings.TIKHUB_ENABLED and not seeded:
+                try:
+                    from app.crawlers.tiktok import TikTokCrawler
+                    from app.analyzers.viral import ViralAnalyzer
+                    from app.analyzers.revenue import RevenueAnalyzer
+                    
+                    crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY)
+                    videos = crawler.get_trending_videos(count=50)
+                    if videos:
+                        crawler.save_videos_to_db(videos, db)
+                        ViralAnalyzer(db).calculate_viral_scores()
+                        RevenueAnalyzer(db).batch_estimate_revenue()
+                        seeded = True
+                        logger.info(f"使用 TikHub API 获取了 {len(videos)} 条真实数据")
+                except Exception as e:
+                    logger.warning(f"TikHub API 获取失败: {e}")
+            
+            if not seeded:
+                from app.demo.seed import generate_demo_data
+                from app.analyzers.viral import ViralAnalyzer
+                from app.analyzers.revenue import RevenueAnalyzer
+                n = generate_demo_data(db)
+                if n > 0:
+                    ViralAnalyzer(db).calculate_viral_scores()
+                    RevenueAnalyzer(db).batch_estimate_revenue()
+                    logger.info(f"使用演示数据: {n} 条")
     except Exception:
         pass
     finally:
