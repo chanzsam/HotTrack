@@ -283,16 +283,16 @@ class TikTokCrawler:
         logger.info(f"[演示数据] 生成 {count} 条 TikTok 演示数据")
         
         real_tiktok_videos = [
-            {"id": "7240000000000000001", "creator": "khaby.lame", "title": "Life hack 😂 #khaby #fyp", "views": 50000000},
-            {"id": "7240000000000000002", "creator": "charlidamelio", "title": "Dance trend 💃 #fyp #viral", "views": 30000000},
-            {"id": "7240000000000000003", "creator": "bellapoarch", "title": "M to the B 🎵 #fyp", "views": 65000000},
-            {"id": "7240000000000000004", "creator": "addisonre", "title": "Get ready with me 💄", "views": 20000000},
-            {"id": "7240000000000000005", "creator": "zachking", "title": "Magic trick ✨ #magic", "views": 40000000},
-            {"id": "7240000000000000006", "creator": "therock", "title": "Workout motivation 💪", "views": 25000000},
-            {"id": "7240000000000000007", "creator": "willsmith", "title": "Family fun 🎬", "views": 35000000},
-            {"id": "7240000000000000008", "creator": "jimmyfallon", "title": "Dance challenge 💃", "views": 15000000},
-            {"id": "7240000000000000009", "creator": "billieeilish", "title": "Music vibes 🎵", "views": 45000000},
-            {"id": "7240000000000000010", "creator": "daviddobrik", "title": "Surprise! 🎉 #vlog", "views": 22000000},
+            {"id": "6860726483632062981", "creator": "bellapoarch", "title": "M to the B 🎵 #fyp #mtob", "views": 722000000},
+            {"id": "7018472888663588869", "creator": "khaby.lame", "title": "Life hack 😂 #khaby #fyp", "views": 360000000},
+            {"id": "6941113121911083013", "creator": "charlidamelio", "title": "Dance trend 💃 #fyp #viral", "views": 285000000},
+            {"id": "7024456387604471606", "creator": "khaby.lame", "title": "Simple solution 😂 #fyp", "views": 320000000},
+            {"id": "6956804838784755718", "creator": "zachking", "title": "Magic trick ✨ #magic #fyp", "views": 250000000},
+            {"id": "6987288404612683782", "creator": "addisonre", "title": "Get ready with me 💄 #fyp", "views": 180000000},
+            {"id": "7012345678901234567", "creator": "therock", "title": "Workout motivation 💪 #fyp", "views": 150000000},
+            {"id": "6976543210987654321", "creator": "willsmith", "title": "Family fun 🎬 #fyp", "views": 200000000},
+            {"id": "6998765432109876543", "creator": "jimmyfallon", "title": "Dance challenge 💃 #fyp", "views": 120000000},
+            {"id": "6965432109876543210", "creator": "daviddobrik", "title": "Surprise! 🎉 #vlog #fyp", "views": 95000000},
         ]
         
         demo_videos = []
@@ -312,7 +312,7 @@ class TikTokCrawler:
                 "channel_id": str(random.randint(1000000000000000000, 9999999999999999999)),
                 "published_at": datetime.now(timezone.utc) - __import__('datetime').timedelta(hours=random.randint(1, 168)),
                 "thumbnail_url": f"https://picsum.photos/seed/{video_id}/400/600",
-                "video_url": f"https://www.tiktok.com/@{creator}",
+                "video_url": f"https://www.tiktok.com/@{creator}/video/{video_id}",
                 "duration": str(random.randint(5, 60)),
                 "category": "",
                 "tags": "fyp,viral,trending",
