@@ -283,16 +283,16 @@ class TikTokCrawler:
         logger.info(f"[演示数据] 生成 {count} 条 TikTok 演示数据")
         
         real_tiktok_videos = [
-            {"id": "7234567890123456789", "creator": "khaby.lame", "title": "Life hack 😂 #khaby #fyp"},
-            {"id": "7234567890123456790", "creator": "charlidamelio", "title": "Dance trend 💃 #fyp #viral"},
-            {"id": "7234567890123456791", "creator": "bellapoarch", "title": "M to the B 🎵 #fyp"},
-            {"id": "7234567890123456792", "creator": "addisonre", "title": "Get ready with me 💄"},
-            {"id": "7234567890123456793", "creator": "zachking", "title": "Magic trick ✨ #magic"},
-            {"id": "7234567890123456794", "creator": "therock", "title": "Workout motivation 💪"},
-            {"id": "7234567890123456795", "creator": "willsmith", "title": "Family fun 🎬"},
-            {"id": "7234567890123456796", "creator": "jimmyfallon", "title": "Dance challenge 💃"},
-            {"id": "7234567890123456797", "creator": "billieeilish", "title": "Music vibes 🎵"},
-            {"id": "7234567890123456798", "creator": "daviddobrik", "title": "Surprise! 🎉 #vlog"},
+            {"id": "7240000000000000001", "creator": "khaby.lame", "title": "Life hack 😂 #khaby #fyp", "views": 50000000},
+            {"id": "7240000000000000002", "creator": "charlidamelio", "title": "Dance trend 💃 #fyp #viral", "views": 30000000},
+            {"id": "7240000000000000003", "creator": "bellapoarch", "title": "M to the B 🎵 #fyp", "views": 65000000},
+            {"id": "7240000000000000004", "creator": "addisonre", "title": "Get ready with me 💄", "views": 20000000},
+            {"id": "7240000000000000005", "creator": "zachking", "title": "Magic trick ✨ #magic", "views": 40000000},
+            {"id": "7240000000000000006", "creator": "therock", "title": "Workout motivation 💪", "views": 25000000},
+            {"id": "7240000000000000007", "creator": "willsmith", "title": "Family fun 🎬", "views": 35000000},
+            {"id": "7240000000000000008", "creator": "jimmyfallon", "title": "Dance challenge 💃", "views": 15000000},
+            {"id": "7240000000000000009", "creator": "billieeilish", "title": "Music vibes 🎵", "views": 45000000},
+            {"id": "7240000000000000010", "creator": "daviddobrik", "title": "Surprise! 🎉 #vlog", "views": 22000000},
         ]
         
         demo_videos = []
@@ -301,8 +301,7 @@ class TikTokCrawler:
             real_video = real_tiktok_videos[i % len(real_tiktok_videos)]
             video_id = real_video["id"]
             creator = real_video["creator"]
-            
-            base_views = random.choice([100000, 500000, 1000000, 5000000, 10000000, 50000000])
+            base_views = real_video["views"]
             
             demo_videos.append({
                 "platform": Platform.TIKTOK,
@@ -313,11 +312,11 @@ class TikTokCrawler:
                 "channel_id": str(random.randint(1000000000000000000, 9999999999999999999)),
                 "published_at": datetime.now(timezone.utc) - __import__('datetime').timedelta(hours=random.randint(1, 168)),
                 "thumbnail_url": f"https://picsum.photos/seed/{video_id}/400/600",
-                "video_url": f"https://www.tiktok.com/@{creator}/video/{video_id}",
+                "video_url": f"https://www.tiktok.com/@{creator}",
                 "duration": str(random.randint(5, 60)),
                 "category": "",
                 "tags": "fyp,viral,trending",
-                "view_count": base_views + random.randint(0, base_views // 2),
+                "view_count": base_views + random.randint(0, base_views // 10),
                 "like_count": int(base_views * random.uniform(0.05, 0.15)),
                 "comment_count": int(base_views * random.uniform(0.005, 0.02)),
                 "share_count": int(base_views * random.uniform(0.01, 0.05)),
