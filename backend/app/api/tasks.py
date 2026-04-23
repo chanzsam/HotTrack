@@ -94,6 +94,13 @@ def crawl_youtube(
     max_results: int = Query(50, ge=1, le=50),
     db: Session = Depends(get_db),
 ):
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"[YouTube 采集] 开始采集, type={type}, region={region}, max_results={max_results}")
+    logger.info(f"[YouTube 采集] YOUTUBE_API_ENABLED={settings.YOUTUBE_API_ENABLED}")
+    logger.info(f"[YouTube 采集] YOUTUBE_API_KEY 长度={len(settings.YOUTUBE_API_KEY) if settings.YOUTUBE_API_KEY else 0}")
+    
     try:
         crawler = YouTubeCrawler()
         videos = []
@@ -105,13 +112,16 @@ def crawl_youtube(
         else:
             videos = crawler.get_most_viewed_videos(region_code=region, max_results=max_results)
 
+        logger.info(f"[YouTube 采集] 获取到 {len(videos)} 条视频")
+
         if not videos:
-            return {"message": "未获取到数据，请检查 YouTube API Key 是否配置", "count": 0}
+            return {"message": "未获取到数据，请检查 YouTube API Key 是否有效或是否已启用 YouTube Data API v3", "count": 0, "api_key_configured": settings.YOUTUBE_API_ENABLED}
 
         saved = crawler.save_videos_to_db(videos, db)
         _run_post_crawl_analysis(db)
         return {"message": f"成功获取并保存 {len(saved)} 条 YouTube 视频", "count": len(saved)}
     except Exception as e:
+        logger.error(f"[YouTube 采集] 失败: {e}")
         return {"message": f"YouTube 采集失败: {str(e)}", "count": 0}
 
 
