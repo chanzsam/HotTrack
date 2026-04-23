@@ -188,6 +188,10 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+.table-wrapper table {
+  min-width: 1100px;
+}
+
 .table-wrapper::-webkit-scrollbar {
   height: 4px;
 }
@@ -446,7 +450,7 @@ body {
 .video-title {
   font-weight: 600;
   color: #1e293b;
-  max-width: 260px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
