@@ -14,11 +14,11 @@ class Settings:
 
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./hottrack.db")
 
-    YOUTUBE_API_KEY: str = os.getenv("YOUTUBE_API_KEY", "")
-    YOUTUBE_API_ENABLED: bool = bool(os.getenv("YOUTUBE_API_KEY", ""))
+    YOUTUBE_API_KEY: str = os.getenv("YOUTUBE_API_KEY", "") or "AIzaSyAbZqqEl_XNjKT1V_G0Vp172iE9OoZA_Dc"
+    YOUTUBE_API_ENABLED: bool = True
 
-    TIKHUB_API_KEY: str = os.getenv("TIKHUB_API_KEY", "")
-    TIKHUB_ENABLED: bool = bool(os.getenv("TIKHUB_API_KEY", ""))
+    TIKHUB_API_KEY: str = os.getenv("TIKHUB_API_KEY", "") or "orBSPOQy2VGVwmK2O5qG3zPgbzm1S5hn0gbbrGqpT9qxggSBeEq4LwW0GQ=="
+    TIKHUB_ENABLED: bool = True
 
     TIKTOK_ENABLED: bool = os.getenv("TIKTOK_ENABLED", "true").lower() == "true"
 
@@ -34,8 +34,8 @@ class Settings:
     ]
     
     def __init__(self):
-        logger.info(f"[Config] YOUTUBE_API_KEY: {'已配置' if self.YOUTUBE_API_KEY else '未配置'} (长度: {len(self.YOUTUBE_API_KEY)})")
-        logger.info(f"[Config] TIKHUB_API_KEY: {'已配置' if self.TIKHUB_API_KEY else '未配置'} (长度: {len(self.TIKHUB_API_KEY)})")
+        logger.info(f"[Config] YOUTUBE_API_KEY: 已配置 (长度: {len(self.YOUTUBE_API_KEY)})")
+        logger.info(f"[Config] TIKHUB_API_KEY: 已配置 (长度: {len(self.TIKHUB_API_KEY)})")
         logger.info(f"[Config] YOUTUBE_API_ENABLED: {self.YOUTUBE_API_ENABLED}")
         logger.info(f"[Config] TIKHUB_ENABLED: {self.TIKHUB_ENABLED}")
 
