@@ -25,7 +25,7 @@
         <div class="empty-icon">🚀</div>
         <p>暂无爆红数据。需要多次采集数据才能计算爆红速度</p>
       </div>
-      <div v-else class="table-wrapper">
+      <div v-else class="table-wrapper viral-table-wrapper">
         <table class="video-table">
           <thead>
             <tr>
@@ -162,6 +162,10 @@ export default {
 </script>
 
 <style scoped>
+.viral-table-wrapper table {
+  min-width: 1350px;
+}
+
 .revenue-cell {
   white-space: nowrap;
 }

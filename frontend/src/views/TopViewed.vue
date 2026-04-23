@@ -25,7 +25,7 @@
         <div class="empty-icon">🏆</div>
         <p>暂无数据，请先到数据采集页面抓取</p>
       </div>
-      <div v-else class="table-wrapper">
+      <div v-else class="table-wrapper topviewed-table-wrapper">
         <table class="video-table">
           <thead>
             <tr>
@@ -160,6 +160,10 @@ export default {
 </script>
 
 <style scoped>
+.topviewed-table-wrapper table {
+  min-width: 1200px;
+}
+
 .revenue-cell {
   white-space: nowrap;
 }

@@ -189,7 +189,7 @@ body {
 }
 
 .table-wrapper table {
-  min-width: 1100px;
+  min-width: 1300px;
 }
 
 .table-wrapper::-webkit-scrollbar {

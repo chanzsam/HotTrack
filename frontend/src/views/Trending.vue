@@ -26,7 +26,7 @@
         <div class="empty-icon">📈</div>
         <p>暂无趋势数据。需要多次采集数据才能计算增长趋势</p>
       </div>
-      <div v-else class="table-wrapper">
+      <div v-else class="table-wrapper trending-table-wrapper">
         <table class="video-table">
           <thead>
             <tr>
@@ -158,6 +158,10 @@ export default {
 </script>
 
 <style scoped>
+.trending-table-wrapper table {
+  min-width: 1200px;
+}
+
 .revenue-cell {
   white-space: nowrap;
 }

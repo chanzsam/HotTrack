@@ -66,7 +66,7 @@
         <div class="empty-icon">💰</div>
         <p>暂无收入数据，请先采集视频数据</p>
       </div>
-      <div v-else class="table-wrapper">
+      <div v-else class="table-wrapper revenue-table-wrapper">
         <table class="video-table">
           <thead>
             <tr>
@@ -325,5 +325,9 @@ export default {
   .result-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+.revenue-table-wrapper table {
+  min-width: 1400px;
 }
 </style>
