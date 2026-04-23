@@ -5,6 +5,17 @@ const api = axios.create({
   timeout: 60000,
 })
 
+api.interceptors.response.use(
+  (response) => {
+    console.log('[API] Response:', response.config.url, 'status:', response.status, 'data length:', response.data?.length)
+    return response
+  },
+  (error) => {
+    console.error('[API] Error:', error.config?.url, error.message)
+    return Promise.reject(error)
+  }
+)
+
 export const videosApi = {
   getTopViewed: (params) => api.get('/videos/top-viewed', { params }),
   getTopLiked: (params) => api.get('/videos/top-liked', { params }),

@@ -83,6 +83,7 @@ export default {
     }
   },
   mounted() {
+    console.log('[TopViewed] Component mounted, calling loadData...')
     this.loadData()
   },
   watch: {
@@ -105,13 +106,19 @@ export default {
         const params = { limit: parseInt(this.limit) }
         if (this.platform) params.platform = this.platform
         console.log('[TopViewed] API params:', params)
+        console.log('[TopViewed] Calling API...')
         const res = await videosApi.getTopViewed(params)
-        console.log('[TopViewed] API response:', res.data.length, 'videos')
-        this.videos = res.data
+        console.log('[TopViewed] API response status:', res.status)
+        console.log('[TopViewed] API response data:', res.data)
+        console.log('[TopViewed] API response length:', res.data?.length)
+        this.videos = res.data || []
+        console.log('[TopViewed] videos set to:', this.videos.length, 'items')
       } catch (e) {
         console.error('[TopViewed] 加载失败:', e)
+        console.error('[TopViewed] Error details:', e.message, e.stack)
       } finally {
         this.loading = false
+        console.log('[TopViewed] Loading complete, videos:', this.videos.length)
       }
     },
     formatNumber(num) {
