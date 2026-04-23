@@ -48,43 +48,42 @@ def _auto_seed_if_empty():
     try:
         count = db.query(Video).count()
         if count == 0:
-            seeded = False
+            youtube_count = 0
+            tiktok_count = 0
             
             if settings.YOUTUBE_API_ENABLED:
                 try:
                     from app.crawlers.youtube import YouTubeCrawler
-                    from app.analyzers.viral import ViralAnalyzer
-                    from app.analyzers.revenue import RevenueAnalyzer
                     
                     crawler = YouTubeCrawler()
                     videos = crawler.get_trending_videos(region_code="US", max_results=50)
                     if videos:
-                        crawler.save_videos_to_db(videos, db)
-                        ViralAnalyzer(db).calculate_viral_scores()
-                        RevenueAnalyzer(db).batch_estimate_revenue()
-                        seeded = True
-                        logger.info(f"使用 YouTube API 获取了 {len(videos)} 条真实数据")
+                        saved = crawler.save_videos_to_db(videos, db)
+                        youtube_count = len(saved)
+                        logger.info(f"使用 YouTube API 获取了 {youtube_count} 条真实数据")
                 except Exception as e:
                     logger.warning(f"YouTube API 获取失败: {e}")
             
-            if settings.TIKHUB_ENABLED and not seeded:
+            if settings.TIKHUB_ENABLED:
                 try:
                     from app.crawlers.tiktok import TikTokCrawler
-                    from app.analyzers.viral import ViralAnalyzer
-                    from app.analyzers.revenue import RevenueAnalyzer
                     
                     crawler = TikTokCrawler(tikhub_api_key=settings.TIKHUB_API_KEY)
                     videos = crawler.get_trending_videos(count=50)
                     if videos:
-                        crawler.save_videos_to_db(videos, db)
-                        ViralAnalyzer(db).calculate_viral_scores()
-                        RevenueAnalyzer(db).batch_estimate_revenue()
-                        seeded = True
-                        logger.info(f"使用 TikHub API 获取了 {len(videos)} 条真实数据")
+                        saved = crawler.save_videos_to_db(videos, db)
+                        tiktok_count = len(saved)
+                        logger.info(f"使用 TikHub API 获取了 {tiktok_count} 条真实数据")
                 except Exception as e:
                     logger.warning(f"TikHub API 获取失败: {e}")
             
-            if not seeded:
+            if youtube_count > 0 or tiktok_count > 0:
+                from app.analyzers.viral import ViralAnalyzer
+                from app.analyzers.revenue import RevenueAnalyzer
+                ViralAnalyzer(db).calculate_viral_scores()
+                RevenueAnalyzer(db).batch_estimate_revenue()
+                logger.info(f"真实数据总计: YouTube {youtube_count} 条, TikTok {tiktok_count} 条")
+            else:
                 from app.demo.seed import generate_demo_data
                 from app.analyzers.viral import ViralAnalyzer
                 from app.analyzers.revenue import RevenueAnalyzer
