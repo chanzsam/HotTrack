@@ -47,7 +47,7 @@
               <td>
                 <div class="video-info">
                   <img :src="v.thumbnail_url" class="video-thumb" @error="handleImgError" />
-                  <div>
+                  <div class="video-info-content">
                     <a :href="v.video_url" target="_blank" class="video-title" :title="v.title">{{ v.title }}</a>
                     <div class="video-channel">{{ v.channel_title }}</div>
                   </div>

@@ -439,18 +439,28 @@ body {
 .video-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
+  min-height: 56px;
 }
 
 .video-thumb {
-  width: 72px;
-  height: 42px;
-  border-radius: 6px;
+  width: 80px;
+  height: 48px;
+  border-radius: 8px;
   object-fit: cover;
   background: #f1f5f9;
   flex-shrink: 0;
   border: 1px solid #e2e8f0;
+}
+
+.video-info-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
 .video-title {
