@@ -452,12 +452,14 @@ body {
 .video-title {
   font-weight: 600;
   color: #1e293b;
-  max-width: 220px;
+  max-width: 280px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   font-size: 13px;
-  line-height: 1.3;
+  line-height: 1.4;
+  word-break: break-word;
 }
 a.video-title {
   text-decoration: none;
@@ -470,11 +472,11 @@ a.video-title:hover {
 .video-channel {
   font-size: 11px;
   color: #94a3b8;
-  margin-top: 2px;
+  margin-top: 3px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 260px;
+  max-width: 280px;
 }
 
 .platform-badge {
