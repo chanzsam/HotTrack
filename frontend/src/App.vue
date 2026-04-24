@@ -184,6 +184,9 @@ body {
 
 .table-wrapper {
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
 }
 
 .table-wrapper::-webkit-scrollbar {
@@ -227,9 +230,10 @@ body {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  padding: 28px;
+  padding: 24px;
   margin-bottom: 20px;
   transition: all 0.2s ease;
+  overflow: hidden;
 }
 .card:hover {
   box-shadow: 0 4px 24px rgba(0,0,0,0.06);
