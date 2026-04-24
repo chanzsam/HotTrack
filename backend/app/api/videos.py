@@ -83,16 +83,31 @@ def cleanup_invalid_videos(
     invalid_videos = []
     
     for video in videos:
-        is_valid = False
+        is_valid = True
+        invalid_reason = ""
+        
         try:
             if video.platform == Platform.YOUTUBE:
                 details = crawler.get_video_details(video.video_id)
-                if details:
-                    is_valid = True
-            else:
-                is_valid = True
+                if not details:
+                    is_valid = False
+                    invalid_reason = "视频链接失效"
+                elif details.get("view_count", 0) == 0 and details.get("like_count", 0) == 0:
+                    is_valid = False
+                    invalid_reason = "数据为空(播放量=0,点赞=0)"
+            
+            if is_valid and video.view_count == 0 and video.like_count == 0:
+                is_valid = False
+                invalid_reason = "本地数据为空(播放量=0,点赞=0)"
+            
+            if is_valid and not video.thumbnail_url:
+                is_valid = False
+                invalid_reason = "缩略图缺失"
+                
         except Exception as e:
             logger.error(f"检测视频 {video.video_id} 失败: {e}")
+            is_valid = False
+            invalid_reason = f"检测异常: {str(e)[:50]}"
         
         if is_valid:
             valid_videos.append(video.id)
@@ -102,6 +117,7 @@ def cleanup_invalid_videos(
                 "video_id": video.video_id,
                 "platform": video.platform.value,
                 "title": video.title,
+                "reason": invalid_reason,
             })
     
     if not dry_run and invalid_videos:

@@ -79,7 +79,7 @@
         <div v-for="v in cleanupResult.invalid_videos" :key="v.id" class="invalid-item">
           <span class="invalid-platform">{{ v.platform === 'youtube' ? 'YT' : 'TT' }}</span>
           <span class="invalid-title">{{ v.title }}</span>
-          <span class="invalid-id">ID: {{ v.video_id }}</span>
+          <span class="invalid-reason">{{ v.reason }}</span>
         </div>
       </div>
     </div>
@@ -623,6 +623,15 @@ export default {
 .invalid-id {
   font-size: 11px;
   color: #94a3b8;
+}
+
+.invalid-reason {
+  font-size: 11px;
+  color: #dc2626;
+  font-weight: 600;
+  background: #fef2f2;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .btn-danger {
