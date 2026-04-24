@@ -44,31 +44,14 @@ short_description: Real-time analysis of trending videos on YouTube and TikTok
 
 ## 📸 界面展示
 
-### 🚀 爆红追踪 - 核心功能展示
-
 ![爆红追踪界面](https://raw.githubusercontent.com/chanzsam/HotTrack/main/screenshots/viral-tracking.png)
 
-*📍 图片源文件: [screenshots/viral-tracking.png](screenshots/viral-tracking.png)*
-
-**功能亮点：**
+**核心功能：**
 - 📊 **实时排名** - 追踪爆红速度最快的视频
 - 🔥 **多平台支持** - YouTube (YT) + TikTok (TT) 数据整合
 - ⚡ **增长指标** - 爆红指数、爆红速度实时计算
 - 💰 **收入预估** - 基于CPM模型的广告收入预测
 - 🎯 **智能筛选** - 按平台、时间范围灵活筛选
-
----
-
-### 其他页面预览
-
-| 页面 | 功能说明 |
-|------|----------|
-| **🏠 仪表盘** | 数据概览，实时统计图表 |
-| **🏆 播放排行** | 按播放量、点赞数排序 |
-| **📈 热门趋势** | 时间维度趋势追踪 |
-| **💰 收入估算** | CPM模型收入详细分析 |
-| **🤖 AI工具** | 标题评分、领域推荐、趋势预测 |
-| **🕷️ 数据采集** | 自动化数据抓取与管理 |
 
 ## 🚀 快速开始
 
