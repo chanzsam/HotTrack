@@ -13,6 +13,14 @@ short_description: Real-time analysis of trending videos on YouTube and TikTok
 
 > 实时分析 YouTube 和 TikTok 上最热门、增长最快的视频，包括收入估算
 
+## 🌐 在线演示
+
+**[🚀 点击这里体验 HotTrack](https://huggingface.co/spaces/chanfasf/HotTrack)**
+
+📍 **演示地址**: https://huggingface.co/spaces/chanfasf/HotTrack
+
+---
+
 [![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Space-blue)](https://huggingface.co/spaces/chanfasf/HotTrack)
 [![GitHub](https://img.shields.io/badge/GitHub-chanzsam-black?logo=github)](https://github.com/chanzsam)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
