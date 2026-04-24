@@ -1,10 +1,14 @@
 from typing import Optional
+import logging
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.video import Platform
+from app.models.video import Platform, Video, VideoSnapshot, ViralRecord, RevenueEstimate
 from app.analyzers.ranking import RankingAnalyzer
+from app.crawlers.youtube import YouTubeCrawler
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/videos", tags=["videos"])
 
@@ -58,3 +62,61 @@ def get_trending(
 def get_platform_stats(db: Session = Depends(get_db)):
     analyzer = RankingAnalyzer(db)
     return analyzer.get_platform_stats()
+
+
+@router.post("/cleanup-invalid")
+def cleanup_invalid_videos(
+    platform: Optional[str] = Query(None, description="平台筛选: youtube 或 tiktok"),
+    dry_run: bool = Query(False, description="仅检测不删除"),
+    db: Session = Depends(get_db),
+):
+    p = _parse_platform(platform)
+    
+    query = db.query(Video)
+    if p:
+        query = query.filter(Video.platform == p)
+    
+    videos = query.all()
+    crawler = YouTubeCrawler()
+    
+    valid_videos = []
+    invalid_videos = []
+    
+    for video in videos:
+        is_valid = False
+        try:
+            if video.platform == Platform.YOUTUBE:
+                details = crawler.get_video_details(video.video_id)
+                if details:
+                    is_valid = True
+            else:
+                is_valid = True
+        except Exception as e:
+            logger.error(f"检测视频 {video.video_id} 失败: {e}")
+        
+        if is_valid:
+            valid_videos.append(video.id)
+        else:
+            invalid_videos.append({
+                "id": video.id,
+                "video_id": video.video_id,
+                "platform": video.platform.value,
+                "title": video.title,
+            })
+    
+    if not dry_run and invalid_videos:
+        for inv in invalid_videos:
+            db.query(VideoSnapshot).filter(VideoSnapshot.video_id == inv["id"]).delete()
+            db.query(ViralRecord).filter(ViralRecord.video_id == inv["id"]).delete()
+            db.query(RevenueEstimate).filter(RevenueEstimate.video_id == inv["id"]).delete()
+            db.query(Video).filter(Video.id == inv["id"]).delete()
+        db.commit()
+    
+    return {
+        "total_checked": len(videos),
+        "valid_count": len(valid_videos),
+        "invalid_count": len(invalid_videos),
+        "invalid_videos": invalid_videos[:20],
+        "dry_run": dry_run,
+        "deleted": not dry_run and len(invalid_videos) > 0,
+    }

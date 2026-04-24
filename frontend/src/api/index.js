@@ -21,6 +21,7 @@ export const videosApi = {
   getTopLiked: (params) => api.get('/videos/top-liked', { params }),
   getTrending: (params) => api.get('/videos/trending', { params }),
   getStats: () => api.get('/videos/stats'),
+  cleanupInvalid: (params) => api.post('/videos/cleanup-invalid', null, { params }),
 }
 
 export const analyticsApi = {

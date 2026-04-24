@@ -45,6 +45,45 @@
       <span class="demo-hint">为所有视频计算收入估算数据</span>
     </div>
 
+    <div class="demo-section">
+      <button class="btn btn-danger" @click="cleanupInvalid" :disabled="cleaning">
+        {{ cleaning ? '⏳ 检测中...' : '🗑️ 清理失效视频' }}
+      </button>
+      <span class="demo-hint">检测并删除链接失效的视频（仅YouTube）</span>
+    </div>
+
+    <div v-if="cleanupResult" class="card cleanup-result">
+      <h3 class="section-title">📊 清理结果</h3>
+      <div class="result-grid">
+        <div class="result-item">
+          <div class="result-label">检测总数</div>
+          <div class="result-value">{{ cleanupResult.total_checked }}</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">有效视频</div>
+          <div class="result-value success">{{ cleanupResult.valid_count }}</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">失效视频</div>
+          <div class="result-value error">{{ cleanupResult.invalid_count }}</div>
+        </div>
+        <div class="result-item">
+          <div class="result-label">状态</div>
+          <div class="result-value" :class="cleanupResult.deleted ? 'success' : 'info'">
+            {{ cleanupResult.deleted ? '已删除' : '仅检测' }}
+          </div>
+        </div>
+      </div>
+      <div v-if="cleanupResult.invalid_videos && cleanupResult.invalid_videos.length > 0" class="invalid-list">
+        <h4>失效视频列表：</h4>
+        <div v-for="v in cleanupResult.invalid_videos" :key="v.id" class="invalid-item">
+          <span class="invalid-platform">{{ v.platform === 'youtube' ? 'YT' : 'TT' }}</span>
+          <span class="invalid-title">{{ v.title }}</span>
+          <span class="invalid-id">ID: {{ v.video_id }}</span>
+        </div>
+      </div>
+    </div>
+
     <div class="task-grid">
       <div class="card task-card">
         <div class="task-header">
@@ -121,7 +160,7 @@
 </template>
 
 <script>
-import { tasksApi } from '../api'
+import { tasksApi, videosApi } from '../api'
 
 export default {
   name: 'Crawl',
@@ -150,6 +189,8 @@ export default {
       seeding: false,
       resetting: false,
       calculating: false,
+      cleaning: false,
+      cleanupResult: null,
       logs: [],
     }
   },
@@ -271,6 +312,28 @@ export default {
         })
       } finally {
         this.resetting = false
+      }
+    },
+    async cleanupInvalid() {
+      this.cleaning = true
+      this.cleanupResult = null
+      const startTime = new Date().toLocaleTimeString()
+      try {
+        const res = await videosApi.cleanupInvalid({ dry_run: false })
+        this.cleanupResult = res.data
+        this.logs.unshift({
+          time: startTime,
+          status: res.data.invalid_count > 0 ? 'warning' : 'success',
+          message: `清理完成: 检测${res.data.total_checked}个视频，发现${res.data.invalid_count}个失效`,
+        })
+      } catch (e) {
+        this.logs.unshift({
+          time: startTime,
+          status: 'error',
+          message: `清理失败: ${e.response?.data?.detail || e.message}`,
+        })
+      } finally {
+        this.cleaning = false
       }
     },
   },
@@ -473,6 +536,114 @@ export default {
 
 .log-msg {
   color: #475569;
+}
+
+.cleanup-result {
+  margin-bottom: 20px;
+}
+
+.cleanup-result .result-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cleanup-result .result-item {
+  text-align: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.cleanup-result .result-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.cleanup-result .result-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.cleanup-result .result-value.success {
+  color: #059669;
+}
+
+.cleanup-result .result-value.error {
+  color: #dc2626;
+}
+
+.cleanup-result .result-value.info {
+  color: #6366f1;
+}
+
+.invalid-list {
+  margin-top: 16px;
+}
+
+.invalid-list h4 {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.invalid-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.invalid-platform {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #dc2626;
+  color: white;
+}
+
+.invalid-title {
+  flex: 1;
+  font-size: 13px;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invalid-id {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
