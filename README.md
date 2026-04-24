@@ -46,7 +46,9 @@ short_description: Real-time analysis of trending videos on YouTube and TikTok
 
 ### 🚀 爆红追踪 - 核心功能展示
 
-![爆红追踪界面](screenshots/viral-tracking.png)
+![爆红追踪界面](https://raw.githubusercontent.com/chanzsam/HotTrack/main/screenshots/viral-tracking.png)
+
+*📍 图片源文件: [screenshots/viral-tracking.png](screenshots/viral-tracking.png)*
 
 **功能亮点：**
 - 📊 **实时排名** - 追踪爆红速度最快的视频
