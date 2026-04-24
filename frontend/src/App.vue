@@ -395,27 +395,34 @@ body {
 .video-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
 .video-table th {
-  text-align: left;
-  padding: 10px 8px;
+  text-align: center;
+  padding: 12px 6px;
   border-bottom: 2px solid #e2e8f0;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-weight: 600;
   letter-spacing: 0.5px;
   white-space: nowrap;
+  background: #fafbfc;
 }
 
+.video-table th:nth-child(1) { width: 50px; }
+.video-table th:nth-child(2) { width: 55px; }
+.video-table th:nth-child(4) { width: 85px; }
+.video-table th:nth-child(5) { width: 70px; }
+.video-table th:nth-child(6) { width: 75px; }
+.video-table th:nth-child(7) { width: 80px; }
+
 .video-table td {
-  padding: 12px 8px;
+  padding: 10px 8px;
   border-bottom: 1px solid #f1f5f9;
   font-size: 13px;
-  color: #475569;
+  color: #334155;
   vertical-align: middle;
+  text-align: center;
 }
 
 .video-table tbody tr {
@@ -433,9 +440,9 @@ body {
 }
 
 .video-thumb {
-  width: 64px;
-  height: 36px;
-  border-radius: 4px;
+  width: 72px;
+  height: 42px;
+  border-radius: 6px;
   object-fit: cover;
   background: #f1f5f9;
   flex-shrink: 0;
@@ -445,11 +452,12 @@ body {
 .video-title {
   font-weight: 600;
   color: #1e293b;
-  max-width: 180px;
+  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
+  line-height: 1.3;
 }
 a.video-title {
   text-decoration: none;
@@ -471,12 +479,11 @@ a.video-title:hover {
 
 .platform-badge {
   display: inline-block;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
 }
 
 .platform-badge.youtube {
@@ -493,9 +500,8 @@ a.video-title:hover {
 
 .rank-number {
   font-weight: 800;
-  font-size: 15px;
+  font-size: 16px;
   color: #f59e0b;
-  font-variant-numeric: tabular-nums;
 }
 
 .growth-positive {
@@ -506,6 +512,12 @@ a.video-title:hover {
 .growth-negative {
   color: #dc2626;
   font-weight: 600;
+}
+
+.data-value {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 13px;
 }
 
 .loading {
